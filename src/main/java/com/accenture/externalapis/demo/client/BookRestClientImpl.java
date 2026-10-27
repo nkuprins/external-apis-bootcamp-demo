@@ -14,6 +14,8 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
+// No retries on purpose: in this blocking client every attempt and backoff wait would hold the
+// caller's request thread.
 @Component
 public class BookRestClientImpl implements BookRestClient {
 
