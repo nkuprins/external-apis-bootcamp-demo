@@ -24,9 +24,6 @@ public class BookWebClientImpl implements BookWebClient {
     //  - WebClientResponseException (4xx/5xx, e.g. book not found or the faulty/teapot book)
     //  - WebClientRequestException (connection refused / timeout - the external service is unreachable)
 
-    // TODO: Implement getBooksInParallel(Long id1, Long id2) - fetch two books in
-    // parallel with Mono.zip(). Handle the same error cases as getBookAsync() above.
-
     @Override
     public Mono<BookDto> getBookAsync(Long id) {
         return webClient.get()
@@ -45,10 +42,9 @@ public class BookWebClientImpl implements BookWebClient {
                 .map(this::toDto);
     }
 
-    // Throw until Task 2
     @Override
     public Mono<List<BookDto>> getBooksInParallel(Long id1, Long id2) {
-        throw new UnsupportedOperationException("Not implemented yet");
+        return Mono.zip(getBookAsync(id1), getBookAsync(id2), List::of);
     }
 
     private BookDto toDto(BookApiResponse book) {
