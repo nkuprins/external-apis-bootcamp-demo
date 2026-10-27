@@ -7,6 +7,7 @@ import org.springframework.http.HttpRequest;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
 
@@ -35,8 +36,10 @@ public class BookRestClientImpl implements BookRestClient {
                 throw new ClientException("External service returned an empty body for book " + id);
             }
             return toDto(book);
+        } catch (ResourceAccessException e) {
+            throw new ClientException("External service unreachable or timed out for book " + id, e);
         } catch (RestClientException e) {
-            throw new ClientException("Failed to fetch book " + id, e);
+            throw new ClientException("Unreadable response for book " + id, e);
         }
     }
 
@@ -54,8 +57,10 @@ public class BookRestClientImpl implements BookRestClient {
             return Arrays.stream(books)
                     .map(this::toDto)
                     .toList();
+        } catch (ResourceAccessException e) {
+            throw new ClientException("External service unreachable or timed out for all books", e);
         } catch (RestClientException e) {
-            throw new ClientException("Failed to fetch all books", e);
+            throw new ClientException("Unreadable response for all books", e);
         }
     }
 
