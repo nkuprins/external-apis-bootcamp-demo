@@ -3,7 +3,7 @@ package com.accenture.externalapis.demo.client;
 import com.accenture.externalapis.demo.config.ExternalServiceProperties;
 import com.accenture.externalapis.demo.dto.BookApiResponse;
 import com.accenture.externalapis.demo.dto.BookDto;
-import org.springframework.core.codec.DecodingException;
+import org.springframework.core.codec.CodecException;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.ClientResponse;
@@ -36,7 +36,7 @@ public class BookWebClientImpl implements BookWebClient {
                 .map(this::toDto)
                 .onErrorMap(WebClientRequestException.class, e ->
                         new ClientException("External service unreachable or timed out for book " + id, e))
-                .onErrorMap(e -> e instanceof DecodingException || e instanceof WebClientResponseException, e ->
+                .onErrorMap(e -> e instanceof CodecException || e instanceof WebClientResponseException, e ->
                         new ClientException("Unreadable response for book " + id, e));
     }
 
@@ -50,7 +50,7 @@ public class BookWebClientImpl implements BookWebClient {
                 .map(this::toDto)
                 .onErrorMap(WebClientRequestException.class, e ->
                         new ClientException("External service unreachable or timed out for all books", e))
-                .onErrorMap(e -> e instanceof DecodingException || e instanceof WebClientResponseException, e ->
+                .onErrorMap(e -> e instanceof CodecException || e instanceof WebClientResponseException, e ->
                         new ClientException("Unreadable response for all books", e));
     }
 
