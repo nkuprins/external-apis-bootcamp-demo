@@ -12,11 +12,17 @@ import org.springframework.web.reactive.function.client.WebClientRequestExceptio
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.util.retry.Retry;
 
+import java.time.Duration;
 import java.util.List;
 
 @Component
 public class BookWebClientImpl implements BookWebClient {
+
+    private static final Retry RETRY_ON_REQUEST_ERRORS = Retry.backoff(2, Duration.ofMillis(200))
+            .filter(WebClientRequestException.class::isInstance)
+            .onRetryExhaustedThrow((spec, signal) -> signal.failure());
 
     private final WebClient webClient;
 
@@ -34,6 +40,7 @@ public class BookWebClientImpl implements BookWebClient {
                 .switchIfEmpty(Mono.error(() ->
                         new ClientException("External service returned an empty body for book " + id)))
                 .map(this::toDto)
+                .retryWhen(RETRY_ON_REQUEST_ERRORS)
                 .onErrorMap(e -> mapError(e, "book " + id));
     }
 
@@ -45,6 +52,7 @@ public class BookWebClientImpl implements BookWebClient {
                 .onStatus(HttpStatusCode::isError, response -> toClientException(response, "all books"))
                 .bodyToFlux(BookApiResponse.class)
                 .map(this::toDto)
+                .retryWhen(RETRY_ON_REQUEST_ERRORS)
                 .onErrorMap(e -> mapError(e, "all books"));
     }
 
