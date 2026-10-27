@@ -1,6 +1,7 @@
 package com.accenture.externalapis.demo.client;
 
 import com.accenture.externalapis.demo.config.ExternalServiceProperties;
+import com.accenture.externalapis.demo.dto.BookApiResponse;
 import com.accenture.externalapis.demo.dto.BookDto;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -12,44 +13,45 @@ import java.util.List;
 @Component
 public class BookWebClientImpl implements BookWebClient {
 
-    private WebClient webClient;
+    private final WebClient webClient;
 
     public BookWebClientImpl(WebClient.Builder builder, ExternalServiceProperties properties) {
-        // TODO: Build the WebClient using builder.baseUrl(properties.baseUrl()).build()
-        // and assign it to this.webClient
-        //
-        // Optional/bonus: this service doesn't require auth, but in a real API you would
-        // often also add builder.defaultHeader("Authorization", "Bearer " + token) here.
+        this.webClient = builder.baseUrl(properties.baseUrl()).build();
     }
 
-    // TODO: Implement getBookAsync(Long id) - fetch one book from GET /books/{id} as
-    // Mono<BookApiResponse>, then map it onto a Mono<BookDto>.
-    //
     // TODO: Handle the main WebClient error cases and rethrow them as ClientException,
     // e.g. via onStatus()/onErrorResume():
     //  - WebClientResponseException (4xx/5xx, e.g. book not found or the faulty/teapot book)
     //  - WebClientRequestException (connection refused / timeout - the external service is unreachable)
 
-    // TODO: Implement getAllBooksAsync() - fetch all books from GET /books as
-    // Flux<BookApiResponse>, then map each one onto a BookDto. Handle the same error
-    // cases as getBookAsync() above.
-
     // TODO: Implement getBooksInParallel(Long id1, Long id2) - fetch two books in
     // parallel with Mono.zip(). Handle the same error cases as getBookAsync() above.
 
-    // Throw until Task 2
     @Override
     public Mono<BookDto> getBookAsync(Long id) {
-        throw new UnsupportedOperationException("Not implemented yet");
+        return webClient.get()
+                .uri("/books/{id}", id)
+                .retrieve()
+                .bodyToMono(BookApiResponse.class)
+                .map(this::toDto);
     }
 
     @Override
     public Flux<BookDto> getAllBooksAsync() {
-        throw new UnsupportedOperationException("Not implemented yet");
+        return webClient.get()
+                .uri("/books")
+                .retrieve()
+                .bodyToFlux(BookApiResponse.class)
+                .map(this::toDto);
     }
 
+    // Throw until Task 2
     @Override
     public Mono<List<BookDto>> getBooksInParallel(Long id1, Long id2) {
         throw new UnsupportedOperationException("Not implemented yet");
+    }
+
+    private BookDto toDto(BookApiResponse book) {
+        return new BookDto(book.title(), book.author(), book.genre(), book.price());
     }
 }
