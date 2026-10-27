@@ -20,6 +20,7 @@ import java.util.List;
 @Component
 public class BookWebClientImpl implements BookWebClient {
 
+    // Only timeouts and connection errors are retried.
     private static final Retry RETRY_ON_REQUEST_ERRORS = Retry.backoff(2, Duration.ofMillis(200))
             .filter(WebClientRequestException.class::isInstance)
             .onRetryExhaustedThrow((spec, signal) -> signal.failure());

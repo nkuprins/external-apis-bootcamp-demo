@@ -9,6 +9,8 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
+    // Every ClientException becomes 502, even an upstream 404 or 429.
+    // This seems to be intended by the assignment requirements, so not changed.
     @ExceptionHandler(ClientException.class)
     public ProblemDetail handleClientException(ClientException ex) {
         return ProblemDetail.forStatusAndDetail(HttpStatus.BAD_GATEWAY, ex.getMessage());
