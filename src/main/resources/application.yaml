@@ -5,6 +5,9 @@ spring:
     client:
       connect-timeout: 2s
       read-timeout: 3s
+    reactiveclient:
+      connect-timeout: 2s
+      read-timeout: 3s
 
 server:
   port: ${SERVER_PORT:8080}
