@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.ClientResponse;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientRequestException;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -35,7 +36,7 @@ public class BookWebClientImpl implements BookWebClient {
                 .map(this::toDto)
                 .onErrorMap(WebClientRequestException.class, e ->
                         new ClientException("External service unreachable or timed out for book " + id, e))
-                .onErrorMap(DecodingException.class, e ->
+                .onErrorMap(e -> e instanceof DecodingException || e instanceof WebClientResponseException, e ->
                         new ClientException("Unreadable response for book " + id, e));
     }
 
@@ -49,7 +50,7 @@ public class BookWebClientImpl implements BookWebClient {
                 .map(this::toDto)
                 .onErrorMap(WebClientRequestException.class, e ->
                         new ClientException("External service unreachable or timed out for all books", e))
-                .onErrorMap(DecodingException.class, e ->
+                .onErrorMap(e -> e instanceof DecodingException || e instanceof WebClientResponseException, e ->
                         new ClientException("Unreadable response for all books", e));
     }
 
