@@ -1,5 +1,11 @@
 # External APIs Bootcamp - Demo App
 
+## Branches
+
+- `main` - the starter project, with the TODOs not implemented yet.
+- `rest-client` - **Practical Task 1**
+- `web-client` - **Practical Task 2**. Built on top of `rest-client`, so it contains Task 1 as well.
+
 This Spring Boot project is the starter for **External APIs in Spring Boot**
 (RestClient and WebClient). Students do **not** build this from scratch - the
 core (interfaces, config, controller) is already in place, and you
