@@ -1,12 +1,16 @@
 package com.accenture.externalapis.demo.client;
 
 import com.accenture.externalapis.demo.config.ExternalServiceProperties;
+import com.accenture.externalapis.demo.dto.BookDto;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
-// TODO: Make this class implement BookWebClient.
+import java.util.List;
+
 @Component
-public class BookWebClientImpl {
+public class BookWebClientImpl implements BookWebClient {
 
     private WebClient webClient;
 
@@ -32,4 +36,20 @@ public class BookWebClientImpl {
 
     // TODO: Implement getBooksInParallel(Long id1, Long id2) - fetch two books in
     // parallel with Mono.zip(). Handle the same error cases as getBookAsync() above.
+
+    // Throw until Task 2
+    @Override
+    public Mono<BookDto> getBookAsync(Long id) {
+        throw new UnsupportedOperationException("Not implemented yet");
+    }
+
+    @Override
+    public Flux<BookDto> getAllBooksAsync() {
+        throw new UnsupportedOperationException("Not implemented yet");
+    }
+
+    @Override
+    public Mono<List<BookDto>> getBooksInParallel(Long id1, Long id2) {
+        throw new UnsupportedOperationException("Not implemented yet");
+    }
 }
