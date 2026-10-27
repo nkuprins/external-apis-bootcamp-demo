@@ -64,6 +64,9 @@ public class BookWebClientImpl implements BookWebClient {
     }
 
     private BookDto toDto(BookApiResponse book) {
+        if (book.price() == null) {
+            throw new ClientException("External service returned no price for book " + book.id());
+        }
         return new BookDto(book.title(), book.author(), book.genre(), book.price());
     }
 }
