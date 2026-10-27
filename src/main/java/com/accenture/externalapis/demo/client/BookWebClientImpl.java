@@ -34,10 +34,7 @@ public class BookWebClientImpl implements BookWebClient {
                 .switchIfEmpty(Mono.error(() ->
                         new ClientException("External service returned an empty body for book " + id)))
                 .map(this::toDto)
-                .onErrorMap(WebClientRequestException.class, e ->
-                        new ClientException("External service unreachable or timed out for book " + id, e))
-                .onErrorMap(e -> e instanceof CodecException || e instanceof WebClientResponseException, e ->
-                        new ClientException("Unreadable response for book " + id, e));
+                .onErrorMap(e -> mapError(e, "book " + id));
     }
 
     @Override
@@ -48,15 +45,22 @@ public class BookWebClientImpl implements BookWebClient {
                 .onStatus(HttpStatusCode::isError, response -> toClientException(response, "all books"))
                 .bodyToFlux(BookApiResponse.class)
                 .map(this::toDto)
-                .onErrorMap(WebClientRequestException.class, e ->
-                        new ClientException("External service unreachable or timed out for all books", e))
-                .onErrorMap(e -> e instanceof CodecException || e instanceof WebClientResponseException, e ->
-                        new ClientException("Unreadable response for all books", e));
+                .onErrorMap(e -> mapError(e, "all books"));
     }
 
     @Override
     public Mono<List<BookDto>> getBooksInParallel(Long id1, Long id2) {
         return Mono.zip(getBookAsync(id1), getBookAsync(id2), List::of);
+    }
+
+    private Throwable mapError(Throwable e, String target) {
+        if (e instanceof WebClientRequestException) {
+            return new ClientException("External service unreachable or timed out for " + target, e);
+        }
+        if (e instanceof CodecException || e instanceof WebClientResponseException) {
+            return new ClientException("Unreadable response for " + target, e);
+        }
+        return e;
     }
 
     private Mono<ClientException> toClientException(ClientResponse response, String target) {
