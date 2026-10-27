@@ -3,7 +3,6 @@ package com.accenture.externalapis.demo.client;
 import com.accenture.externalapis.demo.config.ExternalServiceProperties;
 import com.accenture.externalapis.demo.dto.BookApiResponse;
 import com.accenture.externalapis.demo.dto.BookDto;
-import org.springframework.http.HttpRequest;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.stereotype.Component;
@@ -30,7 +29,8 @@ public class BookRestClientImpl implements BookRestClient {
             BookApiResponse book = restClient.get()
                     .uri("/books/{id}", id)
                     .retrieve()
-                    .onStatus(HttpStatusCode::isError, this::throwClientException)
+                    .onStatus(HttpStatusCode::isError, (request, response) ->
+                            throwClientException(response, "book " + id))
                     .body(BookApiResponse.class);
             if (book == null) {
                 throw new ClientException("External service returned an empty body for book " + id);
@@ -49,7 +49,8 @@ public class BookRestClientImpl implements BookRestClient {
             BookApiResponse[] books = restClient.get()
                     .uri("/books")
                     .retrieve()
-                    .onStatus(HttpStatusCode::isError, this::throwClientException)
+                    .onStatus(HttpStatusCode::isError, (request, response) ->
+                            throwClientException(response, "all books"))
                     .body(BookApiResponse[].class);
             if (books == null) {
                 throw new ClientException("External service returned an empty body for all books");
@@ -64,9 +65,8 @@ public class BookRestClientImpl implements BookRestClient {
         }
     }
 
-    private void throwClientException(HttpRequest request, ClientHttpResponse response) throws IOException {
-        throw new ClientException("External service returned " + response.getStatusCode()
-                + " for " + request.getMethod() + " " + request.getURI());
+    private void throwClientException(ClientHttpResponse response, String target) throws IOException {
+        throw new ClientException("External service returned " + response.getStatusCode() + " for " + target);
     }
 
     private BookDto toDto(BookApiResponse book) {

@@ -29,7 +29,7 @@ public class BookWebClientImpl implements BookWebClient {
         return webClient.get()
                 .uri("/books/{id}", id)
                 .retrieve()
-                .onStatus(HttpStatusCode::isError, this::toClientException)
+                .onStatus(HttpStatusCode::isError, response -> toClientException(response, "book " + id))
                 .bodyToMono(BookApiResponse.class)
                 .switchIfEmpty(Mono.error(() ->
                         new ClientException("External service returned an empty body for book " + id)))
@@ -45,7 +45,7 @@ public class BookWebClientImpl implements BookWebClient {
         return webClient.get()
                 .uri("/books")
                 .retrieve()
-                .onStatus(HttpStatusCode::isError, this::toClientException)
+                .onStatus(HttpStatusCode::isError, response -> toClientException(response, "all books"))
                 .bodyToFlux(BookApiResponse.class)
                 .map(this::toDto)
                 .onErrorMap(WebClientRequestException.class, e ->
@@ -59,9 +59,8 @@ public class BookWebClientImpl implements BookWebClient {
         return Mono.zip(getBookAsync(id1), getBookAsync(id2), List::of);
     }
 
-    private Mono<ClientException> toClientException(ClientResponse response) {
-        return Mono.just(new ClientException("External service returned " + response.statusCode()
-                + " for " + response.request().getMethod() + " " + response.request().getURI()));
+    private Mono<ClientException> toClientException(ClientResponse response, String target) {
+        return Mono.just(new ClientException("External service returned " + response.statusCode() + " for " + target));
     }
 
     private BookDto toDto(BookApiResponse book) {
